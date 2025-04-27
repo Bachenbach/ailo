@@ -1,97 +1,66 @@
-/* styles.css */
-body {
-    margin: 0;
-    padding: 0;
-    font-family: Arial, sans-serif;
-    background-color: #f0f2f5;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
+// script.js
+class AIChat {
+    constructor() {
+        this.chatMessages = document.getElementById('chatMessages');
+        this.userInput = document.getElementById('userInput');
+        this.sendButton = document.getElementById('sendButton');
+        
+        this.initializeEventListeners();
+    }
 
-.chat-container {
-    width: 80%;
-    max-width: 800px;
-    height: 600px;
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
+    initializeEventListeners() {
+        this.sendButton.addEventListener('click', () => this.sendMessage());
+        this.userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                this.sendMessage();
+            }
+        });
+    }
 
-.chat-box {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-}
+    async sendMessage() {
+        const message = this.userInput.value.trim();
+        if (!message) return;
 
-.chat-header {
-    padding: 20px;
-    background: #4a90e2;
-    color: white;
-    font-size: 20px;
-    border-radius: 10px 10px 0 0;
-}
+        // Add user message
+        this.addMessage(message, 'user');
+        this.userInput.value = '';
 
-.chat-messages {
-    flex: 1;
-    padding: 20px;
-    overflow-y: auto;
-    background: white;
-}
+        try {
+            // Simulate AI thinking (replace with your actual AI call)
+            const response = await this.getAIResponse(message);
+            this.addMessage(response.response, 'ai');
+        } catch (error) {
+            this.addMessage('Sorry, I encountered an error.', 'ai');
+            console.error('Error:', error);
+        }
+    }
 
-.message {
-    margin: 10px 0;
-    padding: 10px 15px;
-    border-radius: 5px;
-    max-width: 70%;
-    word-wrap: break-word;
-}
+    addMessage(text, sender) {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message', `${sender}-message`);
+        messageDiv.textContent = text;
+        this.chatMessages.appendChild(messageDiv);
+        this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+    }
 
-.user-message {
-    background: #e3f2fd;
-    margin-left: auto;
-}
+    async getAIResponse(message) {
+        const response = await fetch('http://localhost:5000/api/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ text: message })
+        });
 
-.ai-message {
-    background: #f5f5f5;
-    margin-right: auto;
-}
+        if (!response.ok) {
+            throw new Error('AI processing failed');
+        }
 
-.chat-input {
-    padding: 20px;
-    background: white;
-    border-top: 1px solid #eee;
-    display: flex;
-    gap: 10px;
-}
-
-#userInput {
-    flex: 1;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 16px;
-}
-
-#sendButton {
-    padding: 10px 20px;
-    background: #4a90e2;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-}
-
-#sendButton:hover {
-    background: #357abd;
-}
-
-/* Make it responsive */
-@media (max-width: 768px) {
-    .chat-container {
-        width: 95%;
-        height: 90vh;
+        return await response.json();
     }
 }
+
+// Initialize chat when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    const chat = new AIChat();
+});
