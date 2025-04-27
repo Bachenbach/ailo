@@ -1,116 +1,97 @@
-// script.js
-class AIChatInterface {
-    constructor() {
-        this.chatButton = document.getElementById('chatButton');
-        this.chatWindow = document.getElementById('chatWindow');
-        this.minimizeButton = document.getElementById('minimizeButton');
-        this.sendButton = document.getElementById('sendButton');
-        this.userInput = document.getElementById('userInput');
-        this.chatMessages = document.getElementById('chatMessages');
-        this.thinking = document.getElementById('thinking');
-        this.statusText = document.getElementById('statusText');
-
-        this.initializeEventListeners();
-    }
-
-    initializeEventListeners() {
-        // Toggle chat window
-        this.chatButton.addEventListener('click', () => this.toggleChat());
-        this.minimizeButton.addEventListener('click', () => this.toggleChat());
-
-        // Send message
-        this.sendButton.addEventListener('click', () => this.sendMessage());
-        this.userInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                this.sendMessage();
-            }
-        });
-
-        // Auto-resize textarea
-        this.userInput.addEventListener('input', () => {
-            this.userInput.style.height = 'auto';
-            this.userInput.style.height = this.userInput.scrollHeight + 'px';
-        });
-    }
-
-    toggleChat() {
-        this.chatWindow.classList.toggle('active');
-        if (this.chatWindow.classList.contains('active')) {
-            this.userInput.focus();
-        }
-    }
-
-    async sendMessage() {
-        const message = this.userInput.value.trim();
-        if (!message) return;
-
-        // Add user message
-        this.addMessage(message, 'user');
-        this.userInput.value = '';
-        this.userInput.style.height = 'auto';
-
-        // Show thinking animation
-        this.showThinking(true);
-        this.updateStatus('Processing...');
-
-        try {
-            // Process with AI
-            const response = await this.processWithAI(message);
-            
-            // Hide thinking animation
-            this.showThinking(false);
-            
-            // Add AI response
-            this.addMessage(response.response, 'ai');
-            this.updateStatus('Online');
-        } catch (error) {
-            this.showThinking(false);
-            this.addMessage('Sorry, I encountered an error.', 'ai');
-            this.updateStatus('Error');
-            console.error('Error:', error);
-        }
-    }
-
-    addMessage(text, sender) {
-        const messageDiv = document.createElement('div');
-        messageDiv.classList.add('message', `${sender}-message`);
-        messageDiv.textContent = text;
-        
-        this.chatMessages.appendChild(messageDiv);
-        this.scrollToBottom();
-    }
-
-    showThinking(show) {
-        this.thinking.classList.toggle('active', show);
-    }
-
-    updateStatus(status) {
-        this.statusText.textContent = status;
-    }
-
-    scrollToBottom() {
-        this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
-    }
-
-    async processWithAI(message) {
-        const response = await fetch('http://localhost:5000/api/chat', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ text: message })
-        });
-
-        if (!response.ok) {
-            throw new Error('AI processing failed');
-        }
-
-        return await response.json();
-    }
+/* styles.css */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f0f2f5;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-// Initialize the chat interface
-document.addEventListener('DOMContentLoaded', () => {
-    const chatInterface = new AIChatInterface();
-});
+.chat-container {
+    width: 80%;
+    max-width: 800px;
+    height: 600px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.chat-box {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.chat-header {
+    padding: 20px;
+    background: #4a90e2;
+    color: white;
+    font-size: 20px;
+    border-radius: 10px 10px 0 0;
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background: white;
+}
+
+.message {
+    margin: 10px 0;
+    padding: 10px 15px;
+    border-radius: 5px;
+    max-width: 70%;
+    word-wrap: break-word;
+}
+
+.user-message {
+    background: #e3f2fd;
+    margin-left: auto;
+}
+
+.ai-message {
+    background: #f5f5f5;
+    margin-right: auto;
+}
+
+.chat-input {
+    padding: 20px;
+    background: white;
+    border-top: 1px solid #eee;
+    display: flex;
+    gap: 10px;
+}
+
+#userInput {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+#sendButton {
+    padding: 10px 20px;
+    background: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+#sendButton:hover {
+    background: #357abd;
+}
+
+/* Make it responsive */
+@media (max-width: 768px) {
+    .chat-container {
+        width: 95%;
+        height: 90vh;
+    }
+}
